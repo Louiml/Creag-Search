@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="./logos/logo.ico"/>
+    <title>Creag</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1d1d1e;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 120px 20px;
+            text-align: center;
+        }
+
+        .search-box {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-box input {
+            width: 400px;
+            padding: 15px 50px 15px 25px;
+            border: 2px solid #524e4e;
+            outline: none;
+            border-radius: 25px;
+            background-color: #222020;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .search-box img {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            user-select: none;
+            width: 30px;
+        }
+
+        .recommended-sites {
+            margin-top: 30px;
+            font-weight: bold;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+
+        .site {
+            background-color: #1a1818;
+            padding: 15px;
+            user-select: none !important;
+            border-radius: 25px;
+            width: 45%;
+            text-decoration: none;
+            margin: 10px 0;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+
+        .site:hover {
+            background-color: #242222;
+        }
+
+        .site img {
+            width: 60px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .site hr {
+            border: 1px solid #666;
+            margin: 10px 0;
+        }
+
+        .site a {
+            color: #fff;
+        }
+
+        .site p {
+            color: #fff;
+        }
+
+        .banner-container {
+            text-align: center;
+            user-select: none;
+        }
+        
+        .banner {
+            width: 320px;
+        }
+
+        .suggestions-list {
+            display: none;
+            position: absolute;
+            background-color: #252527;
+            border: #524e4e 2px solid;
+            border-radius: 5px;
+            width: 400px;
+            margin-top: 10px;
+            margin-left: 25px;
+            overflow: auto !important;
+            max-height: 200px;
+
+        }
+        
+        .suggestions-list.show {
+            display: block;
+        }
+        
+        .suggestions-list p {
+            margin: 5px;
+            cursor: pointer;
+            color: #fff;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('search-input');
+            const suggestionsDiv = document.getElementById('suggestions');
+            
+            let suggestionsData = [];
+            
+            fetch('search_suggestions.json')
+                .then(response => response.json())
+                .then(data => {
+                    suggestionsData = data.suggestions;
+                })
+                .catch(error => console.error('An error occurred:', error));
+            
+            searchInput.addEventListener('input', function (e) {
+                const query = e.target.value;
+                const lastWord = query.split(" ").pop();
+                
+                const suggestions = findTopSimilarWords(lastWord, suggestionsData);
+            
+                suggestionsDiv.innerHTML = '';
+                suggestionsDiv.classList.add('show');
+                
+                suggestions.forEach(word => {
+                    const p = document.createElement('p');
+                    const hr = document.createElement('hr');
+                    p.innerText = word;
+                    p.addEventListener('click', function () {
+                        searchInput.value = query.substring(0, query.lastIndexOf(" ")) + " " + word;
+                        suggestionsDiv.classList.remove('show');
+                    });
+                    suggestionsDiv.appendChild(p);
+                    suggestionsDiv.appendChild(hr);
+                });
+            });
+            
+            searchInput.addEventListener('focus', function () {
+                suggestionsDiv.classList.add('show');
+            });
+        });
+        
+        function findTopSimilarWords(query, suggestions) {
+            return suggestions.filter(word => word.startsWith(query)).slice(0, 10);
+        }                
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="banner-container">
+            <img draggable="false" class="banner" src="./logos/Creag_banner.png" />
+        </div>
+        <div class="search-box">
+            <form action="https://duckduckgo.com/" method="get">
+                <input type="text" id="search-input" name="q" placeholder="Search with DuckDuckGo">
+                <img draggable="false" src="https://duckduckgo.com/favicon.ico" alt="DuckDuckGo logo">
+                <div id="suggestions" class="suggestions-list"></div>
+            </form>
+        </div>
+        <div class="recommended-sites">
+            <a href="https://www.wikipedia.org/" draggable="false" class="site">
+                <img draggable="false" alt="Wikipedia logo" src="logos/wikipedia.png" />
+                <hr />
+                <p class="wikipedia">Wikipedia</p>
+            </a>
+            <a href="https://openai.com/chatgpt/" draggable="false" class="site">
+                <img draggable="false" alt="ChatGPT logo" src="logos/chatgpt.png" />
+                <hr />
+                <p class="chatgpt">ChatGPT</p>
+            </a>
+            <a href="https://www.youtube.com/" draggable="false" class="site">
+                <img draggable="false"  alt="YouTube logo" src="logos/youtube.png" />
+                <hr />
+                <p class="youtube">YouTube</p>
+            </a>
+            <a href="https://translate.google.com/" draggable="false" class="site">
+                <img draggable="false" alt="Google Translate logo" src="logos/googletranslate.png" />
+                <hr />
+                <p class="googletranslate">Google Translate</p>
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>
